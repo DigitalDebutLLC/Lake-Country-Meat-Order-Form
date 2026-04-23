@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lake Country Meats – Order Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --crimson: #8B1A1A;
+    --crimson-dark: #5C0E0E;
+    --crimson-light: #B22222;
+    --gold: #C9953A;
+    --gold-light: #E8B96A;
+    --cream: #FAF6EE;
+    --charcoal: #1A1A1A;
+    --smoke: #2E2E2E;
+    --border: rgba(201,149,58,0.25);
+    --green: #2E7D52;
+    --green-light: #4CAF80;
+    --green-dim: rgba(46,125,82,0.15);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--charcoal);
+    color: var(--cream);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: linear-gradient(90deg, var(--crimson-dark), #1a0a0a);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-left img { height: 52px; width: auto; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+  .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold-light); line-height: 1.1; }
+  .topbar-title small {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(250,246,238,0.45);
+  }
+  .back-link {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 7px 16px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .back-link:hover { background: rgba(201,149,58,0.1); }
+
+  .content { max-width: 1300px; margin: 0 auto; padding: 36px 24px; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .stat-card {
+    background: var(--smoke);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .stat-card .s-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(250,246,238,0.45);
+    margin-bottom: 7px;
+  }
+  .stat-card .s-val { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--gold-light); font-weight: 700; line-height: 1; }
+  .stat-card .s-sub { font-size: 0.76rem; color: rgba(250,246,238,0.35); margin-top: 4px; }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .section-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .count-pill {
+    background: var(--crimson-dark);
+    color: var(--gold-light);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(139,26,26,0.5);
+  }
+  .count-pill.green {
+    background: var(--green-dim);
+    color: var(--green-light);
+    border-color: rgba(76,175,128,0.3);
+  }
+
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: rgba(250,246,238,0.6);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: rgba(201,149,58,0.15);
+    border-color: var(--gold);
+    color: var(--gold-light);
+  }
+  .export-btn {
+    background: var(--crimson);
+    color: var(--cream);
+    border: none;
+    border-radius: 7px;
+    padding: 8px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .export-btn:hover { background: var(--crimson-light); }
+
+  .table-wrap {
+    background: var(--smoke);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    overflow-x: auto;
+    margin-bottom: 48px;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  thead tr { background: rgba(0,0,0,0.35); border-bottom: 1px solid var(--border); }
+  thead th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 14px 16px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.025); }
+  tbody tr.completed-row { background: rgba(46,125,82,0.06); }
+  tbody tr.completed-row:hover { background: rgba(46,125,82,0.1); }
+  tbody td { padding: 13px 16px; font-size: 0.88rem; color: rgba(250,246,238,0.78); white-space: nowrap; }
+
+  .order-id { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1px; color: var(--gold-light); font-weight: 700; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
+  .badge-paid { background: rgba(46,125,82,0.2); color: var(--green-light); border: 1px solid rgba(76,175,128,0.3); }
+  .badge-6oz  { background: rgba(139,26,26,0.2); color: #e88; border: 1px solid rgba(139,26,26,0.3); }
+  .badge-8oz  { background: rgba(92,14,14,0.3); color: #ffaaaa; border: 1px solid rgba(139,26,26,0.4); }
+  .badge-done { background: rgba(46,125,82,0.25); color: #7eeeba; border: 1px solid rgba(76,175,128,0.4); }
+
+  .total-cell { font-family: 'Playfair Display', serif; color: var(--gold-light) !important; font-size: 0.98rem !important; }
+
+  /* PICKUP TOGGLE */
+  .pickup-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .toggle-track {
+    width: 42px;
+    height: 23px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    position: relative;
+    transition: background 0.25s, border-color 0.25s;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: var(--green); border-color: var(--green-light); }
+  .toggle-knob {
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 17px; height: 17px;
+    border-radius: 50%;
+    background: rgba(250,246,238,0.45);
+    transition: left 0.2s, background 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .toggle-track.on .toggle-knob { left: 21px; background: var(--cream); }
+  .toggle-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: rgba(250,246,238,0.4); transition: color 0.2s; white-space: nowrap; }
+  .toggle-label.on { color: var(--green-light); }
+
+  .undo-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    color: rgba(250,246,238,0.4);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .undo-btn:hover { border-color: var(--crimson-light); color: #e88; }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: rgba(250,246,238,0.3); font-size: 0.88rem; }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 0 0 40px; }
+
+  @media (max-width: 600px) {
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .content { padding: 20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="logo.png" alt="Lake Country Meats">
+    <div class="topbar-title">
+      Order Management
+      <small>In-Store Pickup · 1700 N Nokomis NE, Alexandria MN 56308</small>
+    </div>
+  </div>
+  <a href="index.html" class="back-link">← Back to Store</a>
+</div>
+
+<div class="content">
+
+  <div class="stat-grid" id="stat-grid"></div>
+
+  <!-- ── AWAITING PICKUP ── -->
+  <div class="section-header">
+    <h2>Awaiting Pickup <span class="count-pill" id="pending-count">0</span></h2>
+    <div class="toolbar">
+      <button class="filter-btn active" onclick="filterPending('all',this)">All</button>
+      <button class="filter-btn" onclick="filterPending('6 oz',this)">6 oz</button>
+      <button class="filter-btn" onclick="filterPending('8 oz',this)">8 oz</button>
+      <button class="export-btn" onclick="exportCSV('pending')">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date / Time</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Size</th>
+          <th>Qty</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Mark Picked Up</th>
+        </tr>
+      </thead>
+      <tbody id="pending-body"></tbody>
+    </table>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- ── COMPLETED ── -->
+  <div class="section-header">
+    <h2>Completed — Picked Up <span class="count-pill green" id="completed-count">0</span></h2>
+    <div class="toolbar">
+      <button class="export-btn" onclick="exportCSV('completed')">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date Ordered</th>
+          <th>Pickup Time</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Size</th>
+          <th>Qty</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Undo</th>
+        </tr>
+      </thead>
+      <tbody id="completed-body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  const sampleOrders = [
+    { id:'LCM-10001', date:'4/23/2025, 8:02 AM',  name:'Mike Anderson',    email:'manderson@email.com',    phone:'(320) 555-0101', size:'8 oz', qty:2, total:'156.00', status:'Paid' },
+    { id:'LCM-10002', date:'4/23/2025, 8:17 AM',  name:'Sarah Johnson',    email:'sarah.j@gmail.com',      phone:'(320) 555-0114', size:'6 oz', qty:3, total:'234.00', status:'Paid' },
+    { id:'LCM-10003', date:'4/23/2025, 8:34 AM',  name:'Tom Reinhardt',    email:'tomr@outlook.com',       phone:'(320) 555-0198', size:'8 oz', qty:1, total:'78.00',  status:'Paid' },
+    { id:'LCM-10004', date:'4/23/2025, 8:51 AM',  name:'Linda Pearson',    email:'lindap@hotmail.com',     phone:'(218) 555-0044', size:'6 oz', qty:4, total:'312.00', status:'Paid' },
+    { id:'LCM-10005', date:'4/23/2025, 9:10 AM',  name:'Dave Christensen', email:'davec@yahoo.com',        phone:'(320) 555-0772', size:'8 oz', qty:2, total:'156.00', status:'Paid' },
+    { id:'LCM-10006', date:'4/23/2025, 9:28 AM',  name:'Karen Olson',      email:'kolson@gmail.com',       phone:'(320) 555-0310', size:'6 oz', qty:1, total:'78.00',  status:'Paid' },
+    { id:'LCM-10007', date:'4/23/2025, 9:45 AM',  name:'Brian Hanson',     email:'bhanson@icloud.com',     phone:'(612) 555-0087', size:'8 oz', qty:5, total:'390.00', status:'Paid' },
+    { id:'LCM-10008', date:'4/23/2025, 10:03 AM', name:'Jessica Norby',    email:'jnorby@email.com',       phone:'(320) 555-0456', size:'6 oz', qty:2, total:'156.00', status:'Paid' },
+    { id:'LCM-10009', date:'4/23/2025, 10:19 AM', name:'Ryan Bjornstad',   email:'ryan.b@gmail.com',       phone:'(218) 555-0099', size:'8 oz', qty:3, total:'234.00', status:'Paid' },
+    { id:'LCM-10010', date:'4/23/2025, 10:37 AM', name:'Amy Gustafson',    email:'agustafson@yahoo.com',   phone:'(320) 555-0603', size:'6 oz', qty:2, total:'156.00', status:'Paid' },
+    { id:'LCM-10011', date:'4/23/2025, 10:55 AM', name:'Craig Thomsen',    email:'cthamsen@outlook.com',   phone:'(320) 555-0721', size:'8 oz', qty:4, total:'312.00', status:'Paid' },
+    { id:'LCM-10012', date:'4/23/2025, 11:08 AM', name:'Debbie Larson',    email:'dlarson@gmail.com',      phone:'(320) 555-0833', size:'6 oz', qty:1, total:'78.00',  status:'Paid' },
+  ];
+
+  function loadPickupState() {
+    return JSON.parse(localStorage.getItem('lcm_pickup') || '{}');
+  }
+
+  function savePickupState(state) {
+    localStorage.setItem('lcm_pickup', JSON.stringify(state));
+  }
+
+  function loadOrders() {
+    const pickupState = loadPickupState();
+    const live = JSON.parse(localStorage.getItem('lcm_orders') || '[]').map(o => ({
+      ...o,
+      pickedUp: pickupState[o.id]?.pickedUp || false,
+      pickupTime: pickupState[o.id]?.pickupTime || null
+    }));
+    const samples = sampleOrders.map(o => ({
+      ...o,
+      pickedUp: pickupState[o.id]?.pickedUp || false,
+      pickupTime: pickupState[o.id]?.pickupTime || null
+    }));
+    return [...live, ...samples];
+  }
+
+  let allOrders = loadOrders();
+  let pendingFilter = 'all';
+
+  function togglePickup(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+    order.pickedUp = true;
+    order.pickupTime = new Date().toLocaleString();
+    const state = loadPickupState();
+    state[orderId] = { pickedUp: order.pickedUp, pickupTime: order.pickupTime };
+    savePickupState(state);
+    render();
+  }
+
+  function undoPickup(orderId) {
+    const order = allOrders.find(o => o.id === orderId);
+    if (!order) return;
+    order.pickedUp = false;
+    order.pickupTime = null;
+    const state = loadPickupState();
+    state[orderId] = { pickedUp: false, pickupTime: null };
+    savePickupState(state);
+    render();
+  }
+
+  function renderStats() {
+    const totalOrders = allOrders.length;
+    const totalBoxes = allOrders.reduce((s, o) => s + Number(o.qty), 0);
+    const totalRevenue = allOrders.reduce((s, o) => s + Number(o.total), 0);
+    const awaiting = allOrders.filter(o => !o.pickedUp).length;
+    const completed = allOrders.filter(o => o.pickedUp).length;
+    const boxes6 = allOrders.filter(o => o.size === '6 oz').reduce((s, o) => s + Number(o.qty), 0);
+    const boxes8 = allOrders.filter(o => o.size === '8 oz').reduce((s, o) => s + Number(o.qty), 0);
+
+    document.getElementById('stat-grid').innerHTML = `
+      <div class="stat-card"><div class="s-label">Total Orders</div><div class="s-val">${totalOrders}</div><div class="s-sub">paid transactions</div></div>
+      <div class="stat-card"><div class="s-label">Awaiting Pickup</div><div class="s-val" style="color:var(--gold-light)">${awaiting}</div><div class="s-sub">orders pending</div></div>
+      <div class="stat-card"><div class="s-label">Picked Up</div><div class="s-val" style="color:var(--green-light)">${completed}</div><div class="s-sub">orders completed</div></div>
+      <div class="stat-card"><div class="s-label">Revenue</div><div class="s-val">$${totalRevenue.toLocaleString()}</div><div class="s-sub">at $78 / box</div></div>
+      <div class="stat-card"><div class="s-label">6 oz Boxes Sold</div><div class="s-val">${boxes6}</div><div class="s-sub">of 210 available</div></div>
+      <div class="stat-card"><div class="s-label">8 oz Boxes Sold</div><div class="s-val">${boxes8}</div><div class="s-sub">of 190 available</div></div>
+    `;
+  }
+
+  function renderPending() {
+    const pending = allOrders.filter(o => !o.pickedUp);
+    const filtered = pendingFilter === 'all' ? pending : pending.filter(o => o.size === pendingFilter);
+    document.getElementById('pending-count').textContent = pending.length;
+
+    if (filtered.length === 0) {
+      document.getElementById('pending-body').innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="icon">✅</div>All orders have been picked up!</div></td></tr>`;
+      return;
+    }
+
+    document.getElementById('pending-body').innerHTML = filtered.map(o => `
+      <tr>
+        <td><span class="order-id">${o.id}</span></td>
+        <td>${o.date}</td>
+        <td>${o.name}</td>
+        <td>${o.email}</td>
+        <td>${o.phone}</td>
+        <td><span class="badge ${o.size === '6 oz' ? 'badge-6oz' : 'badge-8oz'}">${o.size}</span></td>
+        <td style="text-align:center">${o.qty}</td>
+        <td class="total-cell">$${Number(o.total).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+        <td><span class="badge badge-paid">Paid</span></td>
+        <td>
+          <div class="pickup-toggle" onclick="togglePickup('${o.id}')">
+            <div class="toggle-track" id="track-${o.id}">
+              <div class="toggle-knob"></div>
+            </div>
+            <span class="toggle-label" id="tlabel-${o.id}">Mark Picked Up</span>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function renderCompleted() {
+    const completed = allOrders.filter(o => o.pickedUp);
+    document.getElementById('completed-count').textContent = completed.length;
+
+    if (completed.length === 0) {
+      document.getElementById('completed-body').innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="icon">📋</div>No completed pickups yet.</div></td></tr>`;
+      return;
+    }
+
+    document.getElementById('completed-body').innerHTML = completed.map(o => `
+      <tr class="completed-row">
+        <td><span class="order-id">${o.id}</span></td>
+        <td>${o.date}</td>
+        <td style="color:var(--green-light);font-size:0.82rem">${o.pickupTime || '—'}</td>
+        <td>${o.name}</td>
+        <td>${o.email}</td>
+        <td>${o.phone}</td>
+        <td><span class="badge ${o.size === '6 oz' ? 'badge-6oz' : 'badge-8oz'}">${o.size}</span></td>
+        <td style="text-align:center">${o.qty}</td>
+        <td class="total-cell">$${Number(o.total).toLocaleString('en-US',{minimumFractionDigits:2})}</td>
+        <td><span class="badge badge-done">✓ Picked Up</span></td>
+        <td><button class="undo-btn" onclick="undoPickup('${o.id}')">Undo</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function render() {
+    renderStats();
+    renderPending();
+    renderCompleted();
+  }
+
+  function filterPending(size, btn) {
+    pendingFilter = size;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPending();
+  }
+
+  function exportCSV(which) {
+    const orders = which === 'completed'
+      ? allOrders.filter(o => o.pickedUp)
+      : allOrders.filter(o => !o.pickedUp);
+    const headers = ['Order ID','Date','Customer','Email','Phone','Size','Qty','Total','Status','Pickup Time'];
+    const rows = orders.map(o => [o.id, o.date, o.name, o.email, o.phone, o.size, o.qty, '$'+o.total, o.pickedUp ? 'Picked Up' : 'Awaiting Pickup', o.pickupTime || '']);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `lcm_orders_${which}.csv`;
+    a.click();
+  }
+
+  render();
+</script>
+</body>
+</html>
